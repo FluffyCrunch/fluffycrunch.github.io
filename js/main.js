@@ -203,10 +203,13 @@
       const card = document.createElement("article");
       card.className = "game-card";
       card.style.transitionDelay = (i * 100) + "ms";
+      const coverInner = game.cover
+        ? `<img src="${game.cover}" alt="${game.title} screenshot" loading="lazy">`
+        : `<span>${game.emoji}</span>`;
       card.innerHTML = `
         <div class="game-cover" style="background:${game.gradient}">
           <span class="game-status">${game.status || "Playable"}</span>
-          <span>${game.emoji}</span>
+          ${coverInner}
         </div>
         <div class="game-body">
           <h3>${game.title}</h3>

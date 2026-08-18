@@ -2,13 +2,14 @@
 // playUrl should point to a real playable build (itch.io, Steam, WebGL host, etc).
 const GAMES = [
   {
-    title: "Apple Catcher",
-    tagline: "Arcade reflex game",
-    description: "Catch as many falling apples as you can in 30 seconds. Built with Phaser 3 and Vite — playable right in the browser.",
-    tags: ["Phaser 3", "JavaScript", "Arcade"],
-    gradient: "linear-gradient(135deg,#5fbb4f,#e63946)",
-    emoji: "🍎",
-    playUrl: "games/apple-catcher/index.html",
+    title: "Void Rush",
+    tagline: "3D tower defense, built from scratch",
+    description: "A 3D tower defense game running entirely in the browser — no game engine, no editor, mostly no premade assets. 12 waves, 4 upgradeable towers, a shielded final boss. Every sound is synthesized live with the Web Audio API, and the fire, smoke, and terrain are procedural.",
+    tags: ["PixiJS", "WebGL", "Web Audio API", "3D"],
+    cover: "assets/games/void-rush-1.png",
+    gradient: "linear-gradient(135deg,#2e8b57,#1b3a6b)",
+    emoji: "🏰",
+    playUrl: "https://voidrushpixi.netlify.app/",
     status: "Playable"
   },
   {
