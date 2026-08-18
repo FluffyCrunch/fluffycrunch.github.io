@@ -2,33 +2,23 @@
 // playUrl should point to a real playable build (itch.io, Steam, WebGL host, etc).
 const GAMES = [
   {
-    title: "Neon Drift",
-    tagline: "Fast-paced arcade racer",
-    description: "A synthwave-fueled arcade racer built in Unity. Drift through neon canyons, chase ghost times, and beat your best lap.",
+    title: "Apple Catcher",
+    tagline: "Arcade reflex game",
+    description: "Catch as many falling apples as you can in 30 seconds. Built with Phaser 3 and Vite — playable right in the browser.",
+    tags: ["Phaser 3", "JavaScript", "Arcade"],
+    gradient: "linear-gradient(135deg,#5fbb4f,#e63946)",
+    emoji: "🍎",
+    playUrl: "games/apple-catcher/index.html",
+    status: "Playable"
+  },
+  {
+    title: "Flappy Bird",
+    tagline: "Classic side-scroller remake",
+    description: "A faithful Flappy Bird remake built in Unity — bird physics, parallax background, pipe spawner, and score system.",
     tags: ["Unity", "C#", "Arcade"],
-    gradient: "linear-gradient(135deg,#ff2fb3,#7b2ff7)",
-    emoji: "🏎️",
-    playUrl: "#",
-    status: "Coming Soon"
-  },
-  {
-    title: "Hollow Roots",
-    tagline: "Atmospheric 2D platformer",
-    description: "A moody metroidvania about a forest spirit reclaiming a dying grove. Built in Godot with hand-drawn pixel art.",
-    tags: ["Godot", "GDScript", "Platformer"],
-    gradient: "linear-gradient(135deg,#12c2a3,#1b3a6b)",
-    emoji: "🌲",
-    playUrl: "#",
-    status: "Coming Soon"
-  },
-  {
-    title: "Fracture Point",
-    tagline: "Physics puzzle shooter",
-    description: "A first-person puzzle game where every wall can be broken, rebuilt, and used as a weapon. Prototyped in Unreal Engine.",
-    tags: ["Unreal Engine", "Blueprints", "Puzzle"],
-    gradient: "linear-gradient(135deg,#ff8a3d,#e63946)",
-    emoji: "🧨",
-    playUrl: "#",
-    status: "Coming Soon"
+    gradient: "linear-gradient(135deg,#4fc3f7,#7b5cff)",
+    emoji: "🐦",
+    playUrl: "https://github.com/FluffyCrunch/Unity-Game/tree/main/Flappy_Bird",
+    status: "View Source"
   }
 ];

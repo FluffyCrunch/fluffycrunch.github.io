@@ -144,7 +144,7 @@
 
   /* ---------- Typing effect ---------- */
   const typedEl = document.getElementById("typed-text");
-  const phrases = ["playable worlds.", "tight game feel.", "levels people remember.", "systems that just click."];
+  const phrases = ["playable HTML5 games.", "smooth game UI in React.", "real-time interactive systems.", "worlds people remember."];
   function startTyping() {
     let phraseIdx = 0, charIdx = 0, deleting = false;
     function tick() {
@@ -214,7 +214,7 @@
           <p class="game-desc">${game.description}</p>
           <div class="game-tags">${game.tags.map(t => `<span>${t}</span>`).join("")}</div>
           <a class="play-btn" href="${game.playUrl}" target="_blank" rel="noopener noreferrer">
-            <span>Play Now</span>
+            <span>${game.status === "View Source" ? "View Source" : "Play Now"}</span>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
           </a>
         </div>`;
