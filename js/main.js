@@ -192,9 +192,26 @@
         revealObserver.unobserve(entry.target);
       }
     });
-  }, { threshold: 0.15 });
+  }, { threshold: 0.15, rootMargin: "0px 0px -60px 0px" });
 
-  document.querySelectorAll(".reveal-up:not(#hero .reveal-up)").forEach((el) => revealObserver.observe(el));
+  // stagger reveal-up elements based on their order within each section
+  document.querySelectorAll("main > section:not(#hero)").forEach((section) => {
+    section.querySelectorAll(".reveal-up").forEach((el, i) => {
+      el.style.setProperty("--stagger", (i * 110) + "ms");
+      revealObserver.observe(el);
+    });
+  });
+
+  /* ---------- Scroll progress bar ---------- */
+  const progressBar = document.getElementById("scroll-progress");
+  function updateProgress() {
+    const scrollable = document.documentElement.scrollHeight - window.innerHeight;
+    const pct = scrollable > 0 ? window.scrollY / scrollable : 0;
+    progressBar.style.transform = `scaleX(${Math.min(1, Math.max(0, pct))})`;
+  }
+  window.addEventListener("scroll", updateProgress, { passive: true });
+  window.addEventListener("resize", updateProgress);
+  updateProgress();
 
   /* ---------- Render game cards ---------- */
   const grid = document.getElementById("games-grid");
