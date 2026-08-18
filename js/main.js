@@ -254,6 +254,15 @@
     });
   }
 
+  /* ---------- Skill card cursor spotlight ---------- */
+  document.querySelectorAll(".skill-card").forEach((card) => {
+    card.addEventListener("mousemove", (e) => {
+      const rect = card.getBoundingClientRect();
+      card.style.setProperty("--mx", ((e.clientX - rect.left) / rect.width * 100) + "%");
+      card.style.setProperty("--my", ((e.clientY - rect.top) / rect.height * 100) + "%");
+    });
+  });
+
   /* ---------- About card tilt ---------- */
   const aboutCard = document.querySelector(".card-inner");
   if (aboutCard) {

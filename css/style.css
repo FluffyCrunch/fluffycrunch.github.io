@@ -323,20 +323,74 @@ section:not(#hero)::before{
 
 /* ===== Skills ===== */
 .skills-grid{
-  display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1.2rem;
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+  gap:1.3rem;
 }
+@media (min-width:900px){
+  .skills-grid{grid-template-columns:repeat(3,1fr)}
+  .skill-card-featured{grid-column:span 2}
+}
+
 .skill-card{
-  padding:1.8rem;border-radius:16px;border:1px solid var(--border);
-  background:#ffffff06;transition:transform .35s var(--ease), border-color .35s, background .35s;
-  transition-delay:calc(var(--i,0) * 40ms);
+  position:relative;isolation:isolate;overflow:hidden;
+  padding:1.9rem;border-radius:18px;border:1px solid var(--border);
+  background:#ffffff06;
+  transition:transform .4s var(--ease), border-color .4s var(--ease), box-shadow .4s var(--ease);
+  will-change:transform;
 }
-.skill-card:hover{
-  transform:translateY(-8px);
-  border-color:#ffffff2a;background:#ffffff0d;
+/* radial spotlight that tracks the cursor, plus a soft gradient wash */
+.skill-card::before{
+  content:"";position:absolute;inset:0;z-index:0;opacity:0;
+  background:radial-gradient(220px circle at var(--mx,50%) var(--my,50%), color-mix(in srgb, var(--sc1,var(--accent)) 22%, transparent), transparent 70%);
+  transition:opacity .4s var(--ease);
 }
-.skill-icon{font-size:1.8rem;margin-bottom:.9rem}
-.skill-card h3{font-family:var(--font-display);font-size:1.05rem;margin-bottom:.5rem}
-.skill-card p{color:var(--text-dim);font-size:.88rem;line-height:1.6}
+/* animated gradient border ring, revealed on hover */
+.skill-card::after{
+  content:"";position:absolute;inset:0;padding:1px;border-radius:inherit;z-index:0;
+  background:linear-gradient(135deg,var(--sc1,var(--accent)),var(--sc2,var(--accent-2)));
+  -webkit-mask:linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite:xor; mask-composite:exclude;
+  opacity:0;transition:opacity .4s var(--ease);
+}
+.skill-card:hover{transform:translateY(-8px) scale(1.015)}
+.skill-card:hover::before{opacity:1}
+.skill-card:hover::after{opacity:.9}
+.skill-card:hover{box-shadow:0 20px 45px -25px color-mix(in srgb, var(--sc1,var(--accent)) 70%, transparent)}
+
+.skill-card-top{
+  position:relative;z-index:1;display:flex;align-items:center;justify-content:space-between;margin-bottom:1.1rem;
+}
+.skill-icon-badge{
+  width:52px;height:52px;border-radius:14px;font-size:1.5rem;
+  display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(135deg,var(--sc1,var(--accent)),var(--sc2,var(--accent-2)));
+  box-shadow:0 8px 20px -8px color-mix(in srgb, var(--sc1,var(--accent)) 80%, transparent);
+  transition:transform .45s var(--ease);
+}
+.skill-card:hover .skill-icon-badge{transform:rotate(-8deg) scale(1.08)}
+
+.skill-level{
+  position:relative;z-index:1;font-size:.68rem;font-weight:700;letter-spacing:.05em;
+  padding:.32rem .7rem;border-radius:99px;white-space:nowrap;
+}
+.skill-level-core{color:var(--accent-2);background:color-mix(in srgb, var(--accent-2) 16%, transparent);border:1px solid color-mix(in srgb, var(--accent-2) 40%, transparent)}
+.skill-level-growing{color:#ffb374;background:#ff8a3d29;border:1px solid #ff8a3d55;animation:pulseTag 2.4s ease-in-out infinite}
+@keyframes pulseTag{0%,100%{box-shadow:0 0 0 0 #ff8a3d33}50%{box-shadow:0 0 0 5px #ff8a3d00}}
+
+.skill-card h3{position:relative;z-index:1;font-family:var(--font-display);font-size:1.15rem;margin-bottom:.5rem}
+.skill-card p{position:relative;z-index:1;color:var(--text-dim);font-size:.88rem;line-height:1.65;margin-bottom:1.2rem}
+.skill-category{
+  position:relative;z-index:1;display:inline-block;
+  font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;font-weight:600;
+  color:var(--text-dim);
+  padding-top:.9rem;border-top:1px solid var(--border);width:100%;
+}
+
+.skill-card-featured{
+  background:linear-gradient(160deg,#ffffff0a,#ffffff02);
+}
+.skill-card-featured .skill-icon-badge{width:60px;height:60px;font-size:1.7rem}
+.skill-card-featured h3{font-size:1.35rem}
 
 /* ===== Games ===== */
 .games-grid{
