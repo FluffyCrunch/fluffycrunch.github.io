@@ -50,10 +50,11 @@ section{position:relative;padding:min(14vw,140px) 6vw;overflow:hidden}
 .boot-inner{text-align:center;width:min(320px,80vw)}
 .boot-logo{
   font-family:var(--font-display);
-  font-size:2.4rem;font-weight:700;letter-spacing:.08em;
+  font-size:clamp(1.4rem,7vw,2rem);font-weight:700;letter-spacing:.04em;
   background:var(--gradient-1);
   -webkit-background-clip:text;background-clip:text;color:transparent;
   margin-bottom:1.6rem;
+  white-space:nowrap;
 }
 .cursor-blink{animation:blink 1s steps(1) infinite;color:var(--accent-2);-webkit-text-fill-color:var(--accent-2)}
 @keyframes blink{50%{opacity:0}}
@@ -106,9 +107,19 @@ section{position:relative;padding:min(14vw,140px) 6vw;overflow:hidden}
 }
 .nav-wrap{max-width:1180px;margin:0 auto;display:flex;align-items:center;justify-content:space-between}
 .logo{
-  font-family:var(--font-display);font-weight:700;font-size:1.15rem;letter-spacing:.04em;
+  display:flex;flex-direction:column;line-height:1.15;gap:.15rem;
 }
-.logo span{color:var(--accent-2)}
+.logo-main{
+  font-family:var(--font-display);font-weight:700;font-size:1.15rem;letter-spacing:.02em;
+}
+.logo-main span{color:var(--accent-2)}
+.logo-aka{
+  font-family:var(--font-body);font-size:.62rem;font-style:italic;font-weight:400;
+  color:var(--text-dim);letter-spacing:.02em;
+  opacity:0;max-height:0;transform:translateY(-4px);
+  transition:opacity .35s var(--ease), transform .35s var(--ease), max-height .35s var(--ease);
+}
+.logo:hover .logo-aka{opacity:1;max-height:1.2em;transform:translateY(0)}
 .nav-links{display:flex;gap:2.2rem}
 .nav-links a{
   position:relative;font-size:.9rem;font-weight:500;color:var(--text-dim);
