@@ -42,6 +42,6 @@ python -m http.server 8000
 Then open http://localhost:8000
 
 ## Deploying (GitHub Pages)
-1. Push to the `main` branch of this repo.
-2. In GitHub: Settings → Pages → Source: `main` branch, `/ (root)`.
-3. Your site will be live at `https://<username>.github.io/Potfolio/`.
+Live at **https://fluffycrunch.github.io/**
+
+GitHub Pages publishes the `main` branch (root folder). Push to `main` and the site updates within a few minutes.
