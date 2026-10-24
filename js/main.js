@@ -1,282 +1,513 @@
 (() => {
   "use strict";
 
-  /* ---------- Boot screen ---------- */
-  const bootScreen = document.getElementById("boot-screen");
-  const bootFill = document.getElementById("boot-bar-fill");
-  const bootText = document.getElementById("boot-text");
-  let progress = 0;
-  const bootInterval = setInterval(() => {
-    progress += Math.random() * 18 + 6;
-    if (progress >= 100) {
-      progress = 100;
-      clearInterval(bootInterval);
-      bootFill.style.width = "100%";
-      bootText.textContent = "READY.";
-      setTimeout(() => {
-        bootScreen.classList.add("hidden");
-        document.body.style.overflow = "";
-        startHeroReveal();
-      }, 350);
-    } else {
-      bootFill.style.width = progress + "%";
-      bootText.textContent = "LOADING WORLD... " + Math.floor(progress) + "%";
+  const $ = (sel, root = document) => root.querySelector(sel);
+  const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const isTouch = window.matchMedia("(hover: none), (pointer: coarse)").matches;
+  const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+  /* ---------- Sound (Web Audio, off by default) ---------- */
+  const Sound = (() => {
+    let ctx = null;
+    let enabled = false;
+    try { enabled = localStorage.getItem("fc-sound") === "1"; } catch (e) {}
+    const btn = $("#sound-toggle");
+    const sync = () => btn.setAttribute("aria-pressed", String(enabled));
+    sync();
+
+    function tone(freq, dur, type = "square", vol = 0.05, slideTo) {
+      if (!enabled) return;
+      ctx = ctx || new (window.AudioContext || window.webkitAudioContext)();
+      const t = ctx.currentTime;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = type;
+      osc.frequency.setValueAtTime(freq, t);
+      if (slideTo) osc.frequency.exponentialRampToValueAtTime(slideTo, t + dur);
+      gain.gain.setValueAtTime(vol, t);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      osc.connect(gain).connect(ctx.destination);
+      osc.start(t);
+      osc.stop(t + dur);
     }
-  }, 140);
-  document.body.style.overflow = "hidden";
-  // Safety: never trap the user if something goes wrong
-  setTimeout(() => {
+    const seq = (notes, step = 0.08) => notes.forEach((f, i) => setTimeout(() => tone(f, 0.14, "square", 0.045), i * step * 1000));
+
+    const sfx = {
+      hover: () => tone(880, 0.04, "square", 0.018),
+      select: () => tone(440, 0.12, "square", 0.05, 880),
+      coin: () => seq([988, 1319], 0.07),
+      achievement: () => seq([523, 659, 784, 1047], 0.09),
+      open: () => tone(220, 0.18, "triangle", 0.06, 660),
+      close: () => tone(660, 0.14, "triangle", 0.05, 220),
+      cheat: () => seq([392, 523, 659, 784, 659, 784, 1047], 0.07)
+    };
+
+    btn.addEventListener("click", () => {
+      enabled = !enabled;
+      try { localStorage.setItem("fc-sound", enabled ? "1" : "0"); } catch (e) {}
+      sync();
+      sfx.coin();
+    });
+    return { play: (name) => sfx[name] && sfx[name]() };
+  })();
+
+  /* ---------- Achievements ---------- */
+  const ACHIEVEMENTS = {
+    spotlight: { icon: "☠️", name: "Boss Spotted" },
+    library: { icon: "🗂️", name: "Level Select" },
+    inspect: { icon: "🔍", name: "Inspector" },
+    play: { icon: "🎮", name: "Press Start" },
+    skills: { icon: "🌳", name: "Skill Check" },
+    quests: { icon: "📜", name: "Lore Hunter" },
+    contact: { icon: "🪙", name: "Final Stage" },
+    konami: { icon: "🕹️", name: "Cheat Code Entered" }
+  };
+  const unlocked = new Set();
+  $("#ach-total").textContent = Object.keys(ACHIEVEMENTS).length;
+
+  function unlock(id) {
+    if (unlocked.has(id) || !ACHIEVEMENTS[id]) return;
+    unlocked.add(id);
+    $("#ach-count").textContent = unlocked.size;
+    const a = ACHIEVEMENTS[id];
+    const t = document.createElement("div");
+    t.className = "toast";
+    t.innerHTML = `<span class="toast-ico">${a.icon}</span><div><small>ACHIEVEMENT UNLOCKED</small><b>${esc(a.name)}</b></div>`;
+    $("#toast-stack").appendChild(t);
+    Sound.play("achievement");
+    setTimeout(() => { t.classList.add("out"); setTimeout(() => t.remove(), 400); }, 3200);
+  }
+
+  /* ---------- Boot screen ---------- */
+  const TIPS = [
+    "TIP: Every game here is one click from playable.",
+    "TIP: Turn on sound in the top bar for 8-bit SFX.",
+    "TIP: Achievements unlock as you explore.",
+    "TIP: Some games want your hand, not your mouse."
+  ];
+  const bootScreen = $("#boot-screen");
+  const bootFill = $("#boot-bar-fill");
+  const bootText = $("#boot-text");
+  $("#boot-tip").textContent = TIPS[Math.floor(Math.random() * TIPS.length)];
+  let booted = false;
+  function finishBoot() {
+    if (booted) return;
+    booted = true;
     bootScreen.classList.add("hidden");
     document.body.style.overflow = "";
-  }, 4000);
-
-  /* ---------- Custom cursor ---------- */
-  const isTouch = window.matchMedia("(hover: none), (pointer: coarse)").matches;
-  if (!isTouch) {
-    const dot = document.getElementById("cursor-dot");
-    const ring = document.getElementById("cursor-ring");
-    let mx = -100, my = -100, rx = -100, ry = -100;
-    window.addEventListener("mousemove", (e) => {
-      mx = e.clientX; my = e.clientY;
-      dot.style.left = mx + "px"; dot.style.top = my + "px";
-    });
-    function ringLoop() {
-      rx += (mx - rx) * 0.18;
-      ry += (my - ry) * 0.18;
-      ring.style.left = rx + "px"; ring.style.top = ry + "px";
-      requestAnimationFrame(ringLoop);
-    }
-    ringLoop();
-    document.querySelectorAll("a, button, .game-card, .skill-card").forEach((el) => {
-      el.addEventListener("mouseenter", () => ring.classList.add("active"));
-      el.addEventListener("mouseleave", () => ring.classList.remove("active"));
-    });
+    startHero();
+  }
+  if (reduceMotion) {
+    finishBoot();
   } else {
-    document.body.classList.add("no-custom-cursor");
+    document.body.style.overflow = "hidden";
+    let progress = 0;
+    const iv = setInterval(() => {
+      progress = Math.min(100, progress + Math.random() * 20 + 8);
+      bootFill.style.width = progress + "%";
+      bootText.textContent = progress < 100 ? `LOADING ASSETS... ${Math.floor(progress)}%` : "PRESS START";
+      if (progress >= 100) { clearInterval(iv); setTimeout(finishBoot, 380); }
+    }, 120);
+    setTimeout(finishBoot, 3500); // never trap the visitor
   }
 
-  /* ---------- Starfield / particle background canvas ---------- */
-  const canvas = document.getElementById("bg-canvas");
+  /* ---------- Cursor reticle ---------- */
+  let lastHover = null;
+  if (!isTouch && !reduceMotion) {
+    document.body.classList.add("custom-cursor");
+    const ret = $("#cursor-reticle");
+    let mx = -100, my = -100, rx = -100, ry = -100;
+    window.addEventListener("mousemove", (e) => { mx = e.clientX; my = e.clientY; });
+    (function loop() {
+      rx += (mx - rx) * 0.25;
+      ry += (my - ry) * 0.25;
+      ret.style.transform = `translate(${rx}px, ${ry}px) translate(-50%, -50%)`;
+      requestAnimationFrame(loop);
+    })();
+    const lockSel = "a, button, .game-card, [role=tab]";
+    document.addEventListener("mouseover", (e) => {
+      const hit = e.target.closest(lockSel);
+      ret.classList.toggle("lock", !!hit);
+      if (hit && hit !== lastHover) Sound.play("hover");
+      lastHover = hit;
+    });
+  }
+
+  /* ---------- Background: drifting stars + pixel bits ---------- */
+  const canvas = $("#bg-canvas");
   const ctx = canvas.getContext("2d");
-  let w, h, particles;
-  const PARTICLE_COUNT = window.innerWidth < 700 ? 55 : 110;
-
+  let W, H, DPR, stars = [], bits = [];
+  let mouseX = 0.5, mouseY = 0.5;
   function resize() {
-    w = canvas.width = window.innerWidth;
-    h = canvas.height = window.innerHeight;
-  }
-  function makeParticles() {
-    particles = Array.from({ length: PARTICLE_COUNT }, () => ({
-      x: Math.random() * w,
-      y: Math.random() * h,
-      r: Math.random() * 1.6 + 0.4,
-      vx: (Math.random() - 0.5) * 0.15,
-      vy: (Math.random() - 0.5) * 0.15,
-      tw: Math.random() * Math.PI * 2,
-      hue: Math.random() > 0.6 ? "168,224,200" : "123,92,255"
+    DPR = Math.min(window.devicePixelRatio || 1, 2);
+    W = window.innerWidth; H = window.innerHeight;
+    canvas.width = W * DPR; canvas.height = H * DPR;
+    canvas.style.width = W + "px"; canvas.style.height = H + "px";
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    const n = W < 700 ? 70 : 140;
+    stars = Array.from({ length: n }, () => ({
+      x: Math.random() * W, y: Math.random() * H, z: Math.random() * 0.9 + 0.1, tw: Math.random() * 6.28
+    }));
+    const colors = ["#8b5cf6", "#22d3ee", "#ec4899", "#facc15"];
+    bits = Array.from({ length: W < 700 ? 8 : 16 }, () => ({
+      x: Math.random() * W, y: Math.random() * H, s: Math.random() * 5 + 3,
+      vy: -(Math.random() * 0.25 + 0.08), c: colors[(Math.random() * colors.length) | 0], a: Math.random() * 0.35 + 0.15
     }));
   }
+  window.addEventListener("resize", resize);
+  window.addEventListener("mousemove", (e) => { mouseX = e.clientX / W; mouseY = e.clientY / H; });
   resize();
-  makeParticles();
-  window.addEventListener("resize", () => {
-    resize();
-    makeParticles();
+  let bgRunning = true;
+  document.addEventListener("visibilitychange", () => {
+    bgRunning = !document.hidden;
+    if (bgRunning) requestAnimationFrame(drawBg);
   });
-
-  let mouseX = w / 2, mouseY = h / 2;
-  window.addEventListener("mousemove", (e) => { mouseX = e.clientX; mouseY = e.clientY; });
-
-  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-  function drawFrame(t) {
-    ctx.clearRect(0, 0, w, h);
-    for (const p of particles) {
-      p.x += p.vx; p.y += p.vy;
-      p.tw += 0.02;
-      if (p.x < 0) p.x = w; if (p.x > w) p.x = 0;
-      if (p.y < 0) p.y = h; if (p.y > h) p.y = 0;
-
-      const dx = p.x - mouseX, dy = p.y - mouseY;
-      const dist = Math.sqrt(dx * dx + dy * dy);
-      const glow = dist < 160 ? (160 - dist) / 160 : 0;
-
-      const alpha = 0.25 + Math.sin(p.tw) * 0.2 + glow * 0.5;
-      ctx.beginPath();
-      ctx.fillStyle = `rgba(${p.hue},${Math.min(alpha, 0.95)})`;
-      ctx.arc(p.x, p.y, p.r + glow * 1.5, 0, Math.PI * 2);
-      ctx.fill();
+  function drawBg(t) {
+    if (!bgRunning) return;
+    ctx.clearRect(0, 0, W, H);
+    const ox = (mouseX - 0.5) * 30, oy = (mouseY - 0.5) * 30;
+    for (const s of stars) {
+      s.y += s.z * 0.12;
+      if (s.y > H) { s.y = 0; s.x = Math.random() * W; }
+      const a = 0.35 + Math.sin(t * 0.002 + s.tw) * 0.3;
+      ctx.fillStyle = `rgba(220,215,255,${a * s.z})`;
+      const sz = s.z * 1.8;
+      ctx.fillRect(s.x + ox * s.z, s.y + oy * s.z, sz, sz);
     }
-    if (!reduceMotion) requestAnimationFrame(drawFrame);
+    for (const b of bits) {
+      b.y += b.vy;
+      if (b.y < -10) { b.y = H + 10; b.x = Math.random() * W; }
+      ctx.globalAlpha = b.a;
+      ctx.fillStyle = b.c;
+      ctx.fillRect(Math.round(b.x - ox * 0.6), Math.round(b.y - oy * 0.6), b.s, b.s);
+    }
+    ctx.globalAlpha = 1;
+    if (!reduceMotion) requestAnimationFrame(drawBg);
   }
-  requestAnimationFrame(drawFrame);
+  requestAnimationFrame(drawBg);
 
-  /* ---------- Header scroll state ---------- */
-  const header = document.getElementById("site-header");
+  /* ---------- Header, progress bar, active nav ---------- */
+  const header = $("#site-header");
+  const progressBar = $("#scroll-progress");
   window.addEventListener("scroll", () => {
-    header.classList.toggle("scrolled", window.scrollY > 40);
+    const y = window.scrollY;
+    header.classList.toggle("scrolled", y > 30);
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    progressBar.style.width = (max > 0 ? (y / max) * 100 : 0) + "%";
   }, { passive: true });
 
-  /* ---------- Mobile nav ---------- */
-  const navToggle = document.getElementById("nav-toggle");
-  const navLinks = document.querySelector(".nav-links");
+  const navLinks = $$(".nav-links a");
+  const navObserver = new IntersectionObserver((entries) => {
+    entries.forEach((en) => {
+      if (!en.isIntersecting) return;
+      navLinks.forEach((a) => a.classList.toggle("active", a.getAttribute("href") === "#" + en.target.id));
+    });
+  }, { rootMargin: "-45% 0px -50% 0px" });
+  $$("main section[id]").forEach((s) => navObserver.observe(s));
+
+  const navToggle = $("#nav-toggle");
+  const navList = $("#nav-links");
   navToggle.addEventListener("click", () => {
-    navToggle.classList.toggle("open");
-    navLinks.classList.toggle("open");
+    const open = navList.classList.toggle("open");
+    navToggle.setAttribute("aria-expanded", String(open));
   });
-  navLinks.querySelectorAll("a").forEach((a) =>
-    a.addEventListener("click", () => {
-      navToggle.classList.remove("open");
-      navLinks.classList.remove("open");
-    })
-  );
+  navLinks.forEach((a) => a.addEventListener("click", () => {
+    navList.classList.remove("open");
+    navToggle.setAttribute("aria-expanded", "false");
+  }));
 
-  /* ---------- Hero line reveal ---------- */
-  function startHeroReveal() {
-    document.querySelectorAll(".hero-title .line").forEach((line, i) => {
-      setTimeout(() => line.classList.add("in-view"), 150 + i * 180);
-    });
-    document.querySelectorAll("#hero .reveal-up").forEach((el, i) => {
-      setTimeout(() => el.classList.add("in-view"), 500 + i * 130);
-    });
-    startTyping();
-    animateCounters();
+  /* ---------- Hero ---------- */
+  const TYPED = ["3D tower defense.", "match-3 puzzlers.", "hand-tracked games.", "shader toys.", "games in Unity."];
+  function typeLoop() {
+    const el = $("#typed-text");
+    if (reduceMotion) { el.textContent = TYPED[0]; return; }
+    let w = 0, i = 0, deleting = false;
+    (function tick() {
+      const word = TYPED[w];
+      i += deleting ? -1 : 1;
+      el.textContent = word.slice(0, i);
+      let delay = deleting ? 35 : 75;
+      if (!deleting && i === word.length) { deleting = true; delay = 1600; }
+      else if (deleting && i === 0) { deleting = false; w = (w + 1) % TYPED.length; delay = 300; }
+      setTimeout(tick, delay);
+    })();
   }
 
-  /* ---------- Typing effect ---------- */
-  const typedEl = document.getElementById("typed-text");
-  const phrases = ["playable HTML5 games.", "smooth game UI in React.", "real-time interactive systems.", "worlds people remember."];
-  function startTyping() {
-    let phraseIdx = 0, charIdx = 0, deleting = false;
-    function tick() {
-      const current = phrases[phraseIdx];
-      if (!deleting) {
-        charIdx++;
-        typedEl.textContent = current.slice(0, charIdx);
-        if (charIdx === current.length) {
-          deleting = true;
-          setTimeout(tick, 1400);
-          return;
-        }
-      } else {
-        charIdx--;
-        typedEl.textContent = current.slice(0, charIdx);
-        if (charIdx === 0) {
-          deleting = false;
-          phraseIdx = (phraseIdx + 1) % phrases.length;
-        }
-      }
-      setTimeout(tick, deleting ? 35 : 65);
-    }
-    tick();
+  function countUp(el) {
+    const target = +el.dataset.count;
+    if (reduceMotion) { el.textContent = target; return; }
+    const start = performance.now();
+    (function step(now) {
+      const p = Math.min(1, (now - start) / 1200);
+      el.textContent = Math.round(target * (1 - Math.pow(1 - p, 3)));
+      if (p < 1) requestAnimationFrame(step);
+    })(start);
   }
 
-  /* ---------- Counters ---------- */
-  function animateCounters() {
-    document.querySelectorAll(".stat-num").forEach((el) => {
-      const target = parseInt(el.dataset.count, 10);
-      let cur = 0;
-      const step = Math.max(1, target / 40);
-      const iv = setInterval(() => {
-        cur += step;
-        if (cur >= target) { cur = target; clearInterval(iv); }
-        el.textContent = Math.floor(cur);
-      }, 30);
-    });
+  function startHero() {
+    $$("[data-reveal]").forEach((el, i) => setTimeout(() => el.classList.add("in"), 120 + i * 160));
+    typeLoop();
+    setTimeout(() => { $("#xp-fill").style.width = "70%"; }, 600);
   }
 
-  /* ---------- Scroll reveal (IntersectionObserver) ---------- */
-  const revealObserver = new IntersectionObserver((entries) => {
-    entries.forEach((entry) => {
-      if (entry.isIntersecting) {
-        entry.target.classList.add("in-view");
-        revealObserver.unobserve(entry.target);
-      }
-    });
-  }, { threshold: 0.15, rootMargin: "0px 0px -60px 0px" });
+  /* ---------- Attract mode (hero screen) ---------- */
+  const slidesEl = $("#attract-slides");
+  const dotsEl = $("#attract-dots");
+  let attractIdx = 0, attractTimer = null;
+  GAMES.forEach((g, i) => {
+    const img = document.createElement("img");
+    img.src = g.shots[0];
+    img.alt = "";
+    if (i > 1) img.loading = "lazy";
+    slidesEl.appendChild(img);
+    const dot = document.createElement("button");
+    dot.setAttribute("aria-label", `Show ${g.title}`);
+    dot.addEventListener("click", () => { showAttract(i); restartAttract(); });
+    dotsEl.appendChild(dot);
+  });
+  function showAttract(i) {
+    attractIdx = (i + GAMES.length) % GAMES.length;
+    const g = GAMES[attractIdx];
+    $$("img", slidesEl).forEach((im, k) => im.classList.toggle("on", k === attractIdx));
+    $$("button", dotsEl).forEach((d, k) => d.classList.toggle("on", k === attractIdx));
+    $("#attract-title").textContent = g.title;
+    $("#attract-genre").textContent = g.genre.toUpperCase() + " · " + g.engine.toUpperCase();
+    $("#attract-count").textContent = String(attractIdx + 1).padStart(2, "0") + " / " + String(GAMES.length).padStart(2, "0");
+    $("#attract-view").setAttribute("aria-label", `Open details for ${g.title}`);
+  }
+  function restartAttract() {
+    clearInterval(attractTimer);
+    if (!reduceMotion) attractTimer = setInterval(() => showAttract(attractIdx + 1), 4200);
+  }
+  $("#attract-view").addEventListener("click", () => openModal(GAMES[attractIdx]));
+  showAttract(0);
+  restartAttract();
 
-  // stagger reveal-up elements based on their order within each section
-  document.querySelectorAll("main > section:not(#hero)").forEach((section) => {
-    section.querySelectorAll(".reveal-up").forEach((el, i) => {
-      el.style.setProperty("--stagger", (i * 110) + "ms");
-      revealObserver.observe(el);
+  /* ---------- Featured gallery ---------- */
+  const featured = GAMES.find((g) => g.featured);
+  const featMain = $("#feat-main-img");
+  featured.shots.forEach((src, i) => {
+    const b = document.createElement("button");
+    b.innerHTML = `<img src="${src}" alt="" loading="lazy">`;
+    b.setAttribute("aria-label", `Screenshot ${i + 1}`);
+    if (i === 0) b.classList.add("on");
+    b.addEventListener("click", () => {
+      $$("#feat-thumbs button").forEach((x) => x.classList.toggle("on", x === b));
+      featMain.style.opacity = 0;
+      setTimeout(() => { featMain.src = src; featMain.style.opacity = 1; }, 180);
     });
+    $("#feat-thumbs").appendChild(b);
   });
 
-  /* ---------- Scroll progress bar ---------- */
-  const progressBar = document.getElementById("scroll-progress");
-  function updateProgress() {
-    const scrollable = document.documentElement.scrollHeight - window.innerHeight;
-    const pct = scrollable > 0 ? window.scrollY / scrollable : 0;
-    progressBar.style.transform = `scaleX(${Math.min(1, Math.max(0, pct))})`;
-  }
-  window.addEventListener("scroll", updateProgress, { passive: true });
-  window.addEventListener("resize", updateProgress);
-  updateProgress();
-
-  /* ---------- Render game cards ---------- */
-  const grid = document.getElementById("games-grid");
-  if (typeof GAMES !== "undefined") {
-    GAMES.forEach((game, i) => {
-      const card = document.createElement("article");
-      card.className = "game-card";
-      card.style.transitionDelay = (i * 100) + "ms";
-      const coverInner = game.cover
-        ? `<img src="${game.cover}" alt="${game.title} screenshot" loading="lazy">`
-        : `<span>${game.emoji}</span>`;
-      card.innerHTML = `
-        <div class="game-cover" style="background:${game.gradient}">
-          <span class="game-status">${game.status || "Playable"}</span>
-          ${coverInner}
+  /* ---------- Library ---------- */
+  const grid = $("#games-grid");
+  function cardHTML(g) {
+    const live = !!g.playUrl;
+    const primary = live
+      ? `<a class="btn btn-primary btn-sm" href="${g.playUrl}" target="_blank" rel="noopener noreferrer" data-play><span>▶ Play</span></a>`
+      : `<a class="btn btn-primary btn-sm" href="${g.sourceUrl}" target="_blank" rel="noopener noreferrer"><span>&lt;/&gt; Source</span></a>`;
+    return `
+      <button class="gc-cover" data-open="${g.id}" aria-label="Details for ${esc(g.title)}">
+        <img src="${g.shots[0]}" alt="${esc(g.title)} screenshot" loading="lazy">
+        <span class="gc-genre">${esc(g.genre.toUpperCase())}</span>
+        <span class="gc-status ${live ? "live" : "src"}">${live ? "● Playable" : "Source"}</span>
+        <span class="gc-play"><span>${live ? "▶" : "i"}</span></span>
+      </button>
+      <div class="gc-body">
+        <h3>${esc(g.title)}</h3>
+        <p class="gc-tagline">${esc(g.tagline)}</p>
+        <p class="gc-desc">${esc(g.description)}</p>
+        <div class="tags">${g.tags.map((t) => `<span>${esc(t)}</span>`).join("")}</div>
+        <div class="gc-actions">
+          ${primary}
+          <button class="btn btn-ghost btn-sm" data-open="${g.id}"><span>Details</span></button>
         </div>
-        <div class="game-body">
-          <h3>${game.title}</h3>
-          <p class="game-tagline">${game.tagline}</p>
-          <p class="game-desc">${game.description}</p>
-          <div class="game-tags">${game.tags.map(t => `<span>${t}</span>`).join("")}</div>
-          <a class="play-btn" href="${game.playUrl}" target="_blank" rel="noopener noreferrer">
-            <span>${game.status === "View Source" ? "View Source" : "Play Now"}</span>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-          </a>
-        </div>`;
-      grid.appendChild(card);
-      revealObserver.observe(card);
-
-      // subtle 3D tilt on hover
-      card.addEventListener("mousemove", (e) => {
-        const rect = card.getBoundingClientRect();
-        const px = (e.clientX - rect.left) / rect.width - 0.5;
-        const py = (e.clientY - rect.top) / rect.height - 0.5;
-        card.style.transform = `translateY(-6px) rotateX(${-py * 6}deg) rotateY(${px * 8}deg)`;
-      });
-      card.addEventListener("mouseleave", () => {
-        card.style.transform = "";
-      });
-    });
+      </div>`;
   }
+  GAMES.forEach((g) => {
+    const card = document.createElement("article");
+    card.className = "game-card reveal-up";
+    card.dataset.filters = g.filters.join(" ");
+    card.style.setProperty("--acc", g.accent);
+    card.innerHTML = cardHTML(g);
+    grid.appendChild(card);
 
-  /* ---------- Skill card cursor spotlight ---------- */
-  document.querySelectorAll(".skill-card").forEach((card) => {
-    card.addEventListener("mousemove", (e) => {
-      const rect = card.getBoundingClientRect();
-      card.style.setProperty("--mx", ((e.clientX - rect.left) / rect.width * 100) + "%");
-      card.style.setProperty("--my", ((e.clientY - rect.top) / rect.height * 100) + "%");
+    if (!isTouch && !reduceMotion) {
+      card.addEventListener("mousemove", (e) => {
+        const r = card.getBoundingClientRect();
+        const px = (e.clientX - r.left) / r.width - 0.5;
+        const py = (e.clientY - r.top) / r.height - 0.5;
+        card.style.transform = `perspective(900px) rotateY(${px * 8}deg) rotateX(${-py * 8}deg) translateY(-4px)`;
+      });
+      card.addEventListener("mouseleave", () => { card.style.transform = ""; });
+    }
+  });
+
+  const filterBar = $("#filter-bar");
+  GAME_FILTERS.forEach((f, i) => {
+    const count = f.id === "all" ? GAMES.length : GAMES.filter((g) => g.filters.includes(f.id)).length;
+    if (!count) return;
+    const b = document.createElement("button");
+    b.className = "filter-btn";
+    b.setAttribute("role", "tab");
+    b.setAttribute("aria-selected", String(i === 0));
+    b.dataset.filter = f.id;
+    b.innerHTML = `${esc(f.label)}<span class="n">${count}</span>`;
+    filterBar.appendChild(b);
+  });
+  filterBar.addEventListener("click", (e) => {
+    const b = e.target.closest(".filter-btn");
+    if (!b) return;
+    Sound.play("select");
+    $$(".filter-btn", filterBar).forEach((x) => x.setAttribute("aria-selected", String(x === b)));
+    const f = b.dataset.filter;
+    $$(".game-card", grid).forEach((card) => {
+      const show = f === "all" || card.dataset.filters.split(" ").includes(f);
+      card.classList.toggle("hide", !show);
+      card.classList.remove("pop");
+      if (show) { void card.offsetWidth; card.classList.add("pop"); }
     });
   });
 
-  /* ---------- About card tilt ---------- */
-  const aboutCard = document.querySelector(".card-inner");
-  if (aboutCard) {
-    const wrap = document.querySelector(".about-card");
-    wrap.addEventListener("mousemove", (e) => {
-      const rect = wrap.getBoundingClientRect();
-      const px = (e.clientX - rect.left) / rect.width - 0.5;
-      const py = (e.clientY - rect.top) / rect.height - 0.5;
-      aboutCard.style.transform = `rotateX(${-py * 8}deg) rotateY(${px * 10}deg)`;
+  document.addEventListener("click", (e) => {
+    const opener = e.target.closest("[data-open]");
+    if (opener) {
+      const g = GAMES.find((x) => x.id === opener.dataset.open);
+      if (g) openModal(g);
+    }
+    if (e.target.closest("[data-play], a[href*='netlify.app']")) {
+      Sound.play("select");
+      unlock("play");
+    }
+    const sfx = e.target.closest("[data-sfx]");
+    if (sfx) Sound.play(sfx.dataset.sfx);
+  });
+
+  /* ---------- Skill pips ---------- */
+  $$(".pips").forEach((p) => {
+    const lv = +p.dataset.lv;
+    const grow = p.hasAttribute("data-grow");
+    p.setAttribute("role", "img");
+    p.setAttribute("aria-label", `${lv} out of 5${grow ? ", leveling up" : ""}`);
+    for (let i = 0; i < 5; i++) {
+      const pip = document.createElement("i");
+      p.appendChild(pip);
+    }
+  });
+  function fillPips(branch) {
+    $$(".pips", branch).forEach((p) => {
+      const lv = +p.dataset.lv;
+      const grow = p.hasAttribute("data-grow");
+      $$("i", p).forEach((pip, i) => {
+        setTimeout(() => {
+          if (i < lv) pip.classList.add("on");
+          else if (grow && i === lv) pip.classList.add("grow");
+        }, reduceMotion ? 0 : i * 110);
+      });
     });
-    wrap.addEventListener("mouseleave", () => { aboutCard.style.transform = ""; });
   }
 
-  /* ---------- Footer year ---------- */
-  document.getElementById("year").textContent = new Date().getFullYear();
+  /* ---------- Modal ---------- */
+  const modal = $("#game-modal");
+  let lastFocus = null;
+  function setModalShot(src) {
+    $("#modal-img").src = src;
+    $$("#modal-thumbs button").forEach((b) => b.classList.toggle("on", b.dataset.src === src));
+  }
+  function openModal(g) {
+    lastFocus = document.activeElement;
+    $("#modal-genre").textContent = g.genre.toUpperCase();
+    $("#modal-title").textContent = g.title;
+    $("#modal-tagline").textContent = g.tagline;
+    $("#modal-engine").textContent = g.engine;
+    $("#modal-platform").textContent = g.platform;
+    $("#modal-desc").textContent = g.description;
+    $("#modal-img").alt = `${g.title} screenshot`;
+    $("#modal-features").innerHTML = g.features.map((f) => `<li><span>▸</span>${esc(f)}</li>`).join("");
+    $("#modal-controls-wrap").hidden = !g.controls || !g.controls.length;
+    $("#modal-controls").innerHTML = (g.controls || []).map(([k, a]) => `<div><kbd>${esc(k)}</kbd>${esc(a)}</div>`).join("");
+    $("#modal-tags").innerHTML = g.tags.map((t) => `<span>${esc(t)}</span>`).join("");
+    const thumbs = $("#modal-thumbs");
+    thumbs.innerHTML = g.shots.length > 1
+      ? g.shots.map((s, i) => `<button data-src="${s}" aria-label="Screenshot ${i + 1}"><img src="${s}" alt=""></button>`).join("")
+      : "";
+    $$("button", thumbs).forEach((b) => b.addEventListener("click", () => setModalShot(b.dataset.src)));
+    setModalShot(g.shots[0]);
+    $("#modal-cta").innerHTML =
+      (g.playUrl ? `<a class="btn btn-primary" href="${g.playUrl}" target="_blank" rel="noopener noreferrer" data-play><span>▶ Play Now</span></a>` : "") +
+      `<a class="btn btn-ghost" href="${g.sourceUrl}" target="_blank" rel="noopener noreferrer"><span>&lt;/&gt; View Source</span></a>`;
+    modal.hidden = false;
+    document.body.classList.add("modal-open");
+    $(".modal-close", modal).focus();
+    Sound.play("open");
+    unlock("inspect");
+  }
+  function closeModal() {
+    if (modal.hidden) return;
+    modal.hidden = true;
+    document.body.classList.remove("modal-open");
+    Sound.play("close");
+    if (lastFocus) lastFocus.focus();
+  }
+  modal.addEventListener("click", (e) => { if (e.target.closest("[data-close]")) closeModal(); });
+  document.addEventListener("keydown", (e) => {
+    if (modal.hidden) return;
+    if (e.key === "Escape") closeModal();
+    if (e.key === "Tab") {
+      const f = $$("a[href], button:not([disabled])", modal).filter((el) => el.offsetParent !== null);
+      if (!f.length) return;
+      if (e.shiftKey && document.activeElement === f[0]) { e.preventDefault(); f[f.length - 1].focus(); }
+      else if (!e.shiftKey && document.activeElement === f[f.length - 1]) { e.preventDefault(); f[0].focus(); }
+    }
+  });
 
+  /* ---------- Scroll reveals + section achievements ---------- */
+  const revealObserver = new IntersectionObserver((entries) => {
+    entries.forEach((en) => {
+      if (!en.isIntersecting) return;
+      const el = en.target;
+      el.classList.add("in");
+      if (el.classList.contains("tree-branch")) fillPips(el);
+      revealObserver.unobserve(el);
+    });
+  }, { threshold: 0.12, rootMargin: "0px 0px -40px 0px" });
+  $$(".reveal-up").forEach((el, i) => {
+    el.style.transitionDelay = (i % 4) * 70 + "ms";
+    revealObserver.observe(el);
+  });
+
+  const statsObserver = new IntersectionObserver((entries) => {
+    entries.forEach((en) => {
+      if (!en.isIntersecting) return;
+      $$(".stat-num", en.target).forEach(countUp);
+      statsObserver.unobserve(en.target);
+    });
+  }, { threshold: 0.4 });
+  statsObserver.observe($(".hero-stats"));
+
+  const achObserver = new IntersectionObserver((entries) => {
+    entries.forEach((en) => {
+      if (!en.isIntersecting || !booted) return;
+      unlock(en.target.dataset.achievement);
+      achObserver.unobserve(en.target);
+    });
+  }, { threshold: 0.35 });
+  $$("[data-achievement]").forEach((s) => achObserver.observe(s));
+
+  /* ---------- Konami code ---------- */
+  const KONAMI = ["ArrowUp", "ArrowUp", "ArrowDown", "ArrowDown", "ArrowLeft", "ArrowRight", "ArrowLeft", "ArrowRight", "b", "a"];
+  let kPos = 0;
+  document.addEventListener("keydown", (e) => {
+    const key = e.key.length === 1 ? e.key.toLowerCase() : e.key;
+    kPos = key === KONAMI[kPos] ? kPos + 1 : (key === KONAMI[0] ? 1 : 0);
+    if (kPos === KONAMI.length) {
+      kPos = 0;
+      document.body.classList.toggle("cheat");
+      Sound.play("cheat");
+      unlock("konami");
+    }
+  });
+
+  $("#year").textContent = new Date().getFullYear();
 })();
