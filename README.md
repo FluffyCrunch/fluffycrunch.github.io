@@ -1,16 +1,16 @@
 # Shifa Khatri — Game Dev Portfolio
 
-A static, single-page portfolio built with plain HTML/CSS/JS (no build step, no framework).
+A static, single-page portfolio built with plain HTML/CSS/JS (no build step). GSAP and Lenis load from CDNs.
 
 ## Structure
 - `index.html` — page content/sections
 - `css/style.css` — all styling and animations
 - `js/games-data.js` — **edit this to add/update games**
-- `js/main.js` — boot screen, background, attract-mode screen, library filters, game modal, achievements, sound, Konami code
+- `js/main.js` — preloader, 3D screenshot-wall hero, smooth scroll (Lenis), scroll animations (GSAP ScrollTrigger), games gallery, details panel
 
 ## Adding a new game
 Open `js/games-data.js` and add an entry to the `GAMES` array. It shows up automatically in the
-hero "attract mode" screen, the Library (with filters) and its own details modal.
+hero screenshot wall, the games gallery and its details panel.
 
 ```js
 {

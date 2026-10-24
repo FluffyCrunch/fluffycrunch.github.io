@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="no-js">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,374 +7,324 @@
 <meta name="description" content="Shifa Khatri (FluffyCrunch) — game developer. 3D tower defense, match-3, hand-tracked arcade games and shader toys built with Unity, PixiJS, Babylon.js and Phaser. Play them in your browser.">
 <meta property="og:title" content="Shifa Khatri — Game Developer">
 <meta property="og:description" content="Playable games built with Unity, PixiJS, Babylon.js and Phaser.">
-<meta property="og:image" content="assets/games/void-rush-1.webp">
-<meta name="theme-color" content="#07060f">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎮</text></svg>">
+<meta property="og:image" content="https://fluffycrunch.github.io/assets/games/void-rush-1.webp">
+<meta name="theme-color" content="#050507">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22><defs><linearGradient id=%22g%22 x1=%220%22 y1=%220%22 x2=%221%22 y2=%221%22><stop offset=%220%22 stop-color=%22%23a78bfa%22/><stop offset=%221%22 stop-color=%22%2322d3ee%22/></linearGradient></defs><circle cx=%2232%22 cy=%2232%22 r=%2226%22 fill=%22url(%23g)%22/></svg>">
+<script>document.documentElement.classList.replace("no-js","js");</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Press+Start+2P&family=Sora:wght@300;400;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css?v=6">
 </head>
 <body>
 
-<!-- Boot / loading screen -->
-<div id="boot-screen" aria-hidden="true">
-  <div class="boot-inner">
-    <div class="boot-logo">FLUFFY<span>CRUNCH</span></div>
-    <p class="boot-studio">PRESENTS</p>
-    <div class="boot-bar-track"><div class="boot-bar-fill" id="boot-bar-fill"></div></div>
-    <div class="boot-text" id="boot-text">LOADING ASSETS... 0%</div>
-    <p class="boot-tip" id="boot-tip">TIP: Every game here is one click from playable.</p>
+<!-- Preloader -->
+<div id="preloader" aria-hidden="true">
+  <div class="pl-inner">
+    <div class="pl-name"><span>Shifa Khatri</span></div>
+    <div class="pl-row">
+      <span class="pl-role">Game Developer</span>
+      <span class="pl-count" id="pl-count">000</span>
+    </div>
+    <div class="pl-bar"><i id="pl-bar"></i></div>
   </div>
 </div>
 
-<div id="scroll-progress"></div>
-<canvas id="bg-canvas" aria-hidden="true"></canvas>
-<div class="crt" aria-hidden="true"></div>
-<div class="cursor-reticle" id="cursor-reticle" aria-hidden="true"><span></span></div>
-<div id="toast-stack" aria-live="polite"></div>
+<div class="grain" aria-hidden="true"></div>
+<div class="cursor" id="cursor" aria-hidden="true"><span class="cursor-label" id="cursor-label"></span></div>
+<div id="toast" role="status" aria-live="polite"></div>
 
-<header id="site-header">
-  <nav class="nav-wrap">
-    <a href="#hero" class="logo">
-      <span class="logo-main">Fluffy<span>Crunch</span></span>
-      <span class="logo-aka">aka Shifa Khatri</span>
-    </a>
-    <ul class="nav-links" id="nav-links">
-      <li><a href="#featured">Spotlight</a></li>
-      <li><a href="#library">Library</a></li>
-      <li><a href="#skills">Skill Tree</a></li>
-      <li><a href="#quests">Quest Log</a></li>
-      <li><a href="#contact">Contact</a></li>
-    </ul>
-    <div class="nav-hud">
-      <div class="ach-counter" title="Achievements unlocked on this page">
-        <span class="ach-icon">🏆</span><span id="ach-count">0</span>/<span id="ach-total">0</span>
-      </div>
-      <button id="sound-toggle" class="icon-btn" aria-label="Toggle sound effects" aria-pressed="false" title="Sound effects">
-        <svg class="snd-off" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 5 6 9H2v6h4l5 4V5Z"/><path d="m23 9-6 6M17 9l6 6"/></svg>
-        <svg class="snd-on" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 5 6 9H2v6h4l5 4V5Z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M19 5a10 10 0 0 1 0 14"/></svg>
-      </button>
-      <button id="nav-toggle" aria-label="Toggle menu" aria-expanded="false"><span></span><span></span><span></span></button>
-    </div>
+<header class="nav" id="nav">
+  <a href="#hero" class="brand" aria-label="FluffyCrunch, back to top">
+    <span class="brand-mark"></span>
+    <span class="brand-text">FluffyCrunch</span>
+  </a>
+  <nav class="nav-links" id="nav-links" aria-label="Main">
+    <a href="#work">Games</a>
+    <a href="#skills">Toolkit</a>
+    <a href="#about">About</a>
+    <a href="#contact" class="nav-mobile-only">Contact</a>
   </nav>
+  <a href="#contact" class="nav-cta magnetic"><span>Let's talk</span></a>
+  <button class="nav-burger" id="nav-burger" aria-label="Open menu" aria-expanded="false"><span></span><span></span></button>
 </header>
 
 <main>
-  <!-- HERO -->
+  <!-- HERO: a tilted 3D wall of real game screenshots -->
   <section id="hero">
-    <div class="hero-grid" aria-hidden="true"></div>
-    <div class="hero-layout">
-      <div class="hero-content">
-        <p class="pixel-label reveal-up"><span class="blink-dot"></span>PLAYER 1 · READY</p>
-        <h1 class="hero-title">
-          <span class="line" data-reveal>Shifa <span class="accent">Khatri</span></span>
-          <span class="line line-sub" data-reveal>I build <span class="typed-wrap"><span id="typed-text"></span><span class="type-caret">_</span></span></span>
-        </h1>
-        <p class="hero-sub reveal-up">Game developer making 3D tower defense, match-3 puzzlers, hand-tracked arcade games and shader toys. Most of them run in your browser right now, no install needed. Next boss: shipping a full Unity title.</p>
+    <div class="wall" aria-hidden="true">
+      <div class="wall-plane" id="wall-plane"></div>
+    </div>
+    <div class="hero-vignette" aria-hidden="true"></div>
 
-        <div class="player-card reveal-up">
-          <div class="pc-row">
-            <span class="pc-class">CLASS · <b>Game Developer</b></span>
-            <span class="pc-level">LV <b id="player-level">7</b></span>
-          </div>
-          <div class="xp-bar"><div class="xp-fill" id="xp-fill"></div></div>
-          <div class="pc-row pc-small">
-            <span>XP → next level: first Unity release</span>
-            <span id="xp-text">70%</span>
-          </div>
-        </div>
+    <div class="hero-top">
+      <span class="mono">Game Developer</span>
+      <span class="mono hide-sm">Unity · PixiJS · Babylon.js · Phaser</span>
+      <span class="mono"><span class="live-dot"></span>Portfolio ©2026</span>
+    </div>
 
-        <div class="hero-cta reveal-up">
-          <a href="#library" class="btn btn-primary" data-sfx="select"><span>▶ Press Start</span></a>
-          <a href="https://github.com/FluffyCrunch" target="_blank" rel="noopener noreferrer" class="btn btn-ghost"><span>View Source on GitHub</span></a>
-        </div>
-      </div>
+    <h1 class="hero-title" aria-label="Shifa Khatri">
+      <span class="ht-line"><span class="split">Shifa</span></span>
+      <span class="ht-line ht-right"><span class="split">Khatri</span></span>
+    </h1>
 
-      <!-- Attract-mode screen: cycles through game screenshots -->
-      <div class="hero-screen reveal-up" id="attract">
-        <div class="screen-bezel">
-          <div class="screen-top">
-            <span class="pixel-label small"><span class="rec-dot"></span>ATTRACT MODE</span>
-            <span class="screen-count" id="attract-count">01 / 07</span>
-          </div>
-          <button class="screen-view" id="attract-view" aria-label="Open game details">
-            <div class="screen-slides" id="attract-slides"></div>
-            <div class="screen-scan" aria-hidden="true"></div>
-            <div class="screen-caption">
-              <span class="screen-genre" id="attract-genre"></span>
-              <span class="screen-title" id="attract-title"></span>
-            </div>
-          </button>
-          <div class="screen-dots" id="attract-dots"></div>
-        </div>
+    <div class="hero-bottom">
+      <p class="hero-lead reveal">I build <em>playable worlds</em>: 3D tower defense, match-3 puzzlers, hand-tracked arcade games and shader toys. Most of them run in your browser, no install needed.</p>
+      <div class="hero-actions reveal">
+        <a href="#work" class="btn btn-light magnetic"><span>Explore the games</span><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12l7 7 7-7"/></svg></a>
+        <a href="https://voidrushpixi.netlify.app/" target="_blank" rel="noopener noreferrer" class="btn btn-glass magnetic"><span>Play Void Rush</span><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17 17 7M8 7h9v9"/></svg></a>
       </div>
     </div>
 
-    <div class="hero-stats reveal-up">
-      <div class="stat"><span class="stat-num" data-count="7">0</span><span class="stat-label">Games &amp; toys built</span></div>
-      <div class="stat"><span class="stat-num" data-count="5">0</span><span class="stat-label">Playable in browser</span></div>
-      <div class="stat"><span class="stat-num" data-count="5">0</span><span class="stat-label">Engines &amp; frameworks</span></div>
-      <div class="stat"><span class="stat-num" data-count="2">0</span><span class="stat-label">3D pipelines, one game</span></div>
-    </div>
-    <a href="#featured" class="scroll-indicator" aria-label="Scroll down"><span></span></a>
+    <div class="scroll-cue" aria-hidden="true"><span class="mono">Scroll</span><i></i></div>
   </section>
 
-  <!-- FEATURED -->
-  <section id="featured" data-achievement="spotlight">
-    <div class="section-inner">
-      <p class="section-tag reveal-up">// 01 — SPOTLIGHT</p>
-      <h2 class="section-title reveal-up">Boss Level: <span class="grad">Void Rush</span></h2>
-      <div class="featured-grid" id="featured-game">
-        <div class="feat-media reveal-up">
-          <div class="feat-main"><img id="feat-main-img" src="assets/games/void-rush-1.webp" alt="Void Rush gameplay: towers defending a 3D map against an incoming boss" loading="lazy"></div>
-          <div class="feat-thumbs" id="feat-thumbs"></div>
+  <!-- MARQUEE -->
+  <div class="marquee" aria-hidden="true">
+    <div class="marquee-track">
+      <span>Unity</span><b>✦</b><span>PixiJS</span><b>✦</b><span>Babylon.js</span><b>✦</b><span>Phaser</span><b>✦</b><span>GLSL</span><b>✦</b><span>MediaPipe</span><b>✦</b><span>Web Audio</span><b>✦</b><span>C#</span><b>✦</b>
+      <span>Unity</span><b>✦</b><span>PixiJS</span><b>✦</b><span>Babylon.js</span><b>✦</b><span>Phaser</span><b>✦</b><span>GLSL</span><b>✦</b><span>MediaPipe</span><b>✦</b><span>Web Audio</span><b>✦</b><span>C#</span><b>✦</b>
+    </div>
+  </div>
+
+  <!-- INTRO / MANIFESTO -->
+  <section id="intro">
+    <div class="wrap">
+      <p class="eyebrow reveal"><span>01</span>The short version</p>
+      <p class="manifesto" id="manifesto">I care about how a game feels in your hands: the snap of a gem swap, screen shake that grows with a rally, a CPU that's good but not perfect. Seven games and toys so far, built across four engines, and a full Unity title is next.</p>
+      <div class="stats">
+        <div class="stat reveal"><span class="stat-num" data-count="7">0</span><span class="stat-label">Games &amp; toys built</span></div>
+        <div class="stat reveal"><span class="stat-num" data-count="5">0</span><span class="stat-label">Playable in the browser</span></div>
+        <div class="stat reveal"><span class="stat-num" data-count="4">0</span><span class="stat-label">Game engines used</span></div>
+        <div class="stat reveal"><span class="stat-num" data-count="2">0</span><span class="stat-label">3D pipelines, one game</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SPOTLIGHT: VOID RUSH -->
+  <section id="spotlight">
+    <div class="spot-pin">
+      <div class="spot-media" id="spot-media">
+        <img src="assets/games/void-rush-1.webp" alt="Void Rush: towers defending a 3D map as a boss wave approaches">
+        <div class="spot-shade"></div>
+      </div>
+      <div class="spot-head">
+        <p class="eyebrow"><span>02</span>Featured game</p>
+        <h2 class="spot-title"><span class="split">Void Rush</span></h2>
+      </div>
+      <div class="spot-panel glass" id="spot-panel">
+        <div class="chips"><span class="chip chip-live"><span class="live-dot"></span>Playable</span><span class="chip">Tower Defense</span><span class="chip">3D · WebGL</span></div>
+        <p class="spot-lead">A 3D tower defense game I built <strong>twice</strong>: the same map, waves, towers and enemy data rendered by two completely different engines.</p>
+        <div class="spot-stats">
+          <div><b>12</b><span>Waves</span></div>
+          <div><b>5</b><span>Tower types</span></div>
+          <div><b>2</b><span>3D engines</span></div>
         </div>
-        <div class="feat-info reveal-up">
-          <div class="feat-badges">
-            <span class="chip chip-live">● LIVE</span>
-            <span class="chip">Tower Defense</span>
-            <span class="chip">3D · WebGL</span>
-          </div>
-          <p class="feat-lead">A 3D tower defense game I built <strong>twice</strong>: the same map, waves, towers and enemy data rendered through two completely different engines.</p>
-          <div class="feat-stats">
-            <div><b>12</b><span>Waves</span></div>
-            <div><b>5</b><span>Tower types</span></div>
-            <div><b>2</b><span>3D engines</span></div>
-            <div><b>☠</b><span>Boss waves</span></div>
-          </div>
-          <ul class="feat-list">
-            <li><span>▸</span>Frost, Laser, Cannon, Tesla and Spike Trap towers with branching upgrades</li>
-            <li><span>▸</span>Hand-written GLB loader so pixi3d can render the Kenney 3D kit</li>
-            <li><span>▸</span>Babylon.js build sharing one data file for map, waves and difficulty</li>
-            <li><span>▸</span>Gold economy, base HP and escalating enemy spawns</li>
-          </ul>
-          <div class="feat-cta">
-            <a href="https://voidrushpixi.netlify.app/" target="_blank" rel="noopener noreferrer" class="btn btn-primary" data-sfx="select"><span>▶ Play Void Rush</span></a>
-            <a href="https://github.com/FluffyCrunch/Pixi/tree/main/Void-Rush" target="_blank" rel="noopener noreferrer" class="btn btn-ghost"><span>&lt;/&gt; Source</span></a>
-          </div>
+        <ul class="ticks">
+          <li>Frost, Laser, Cannon, Tesla &amp; Spike Trap with branching upgrades</li>
+          <li>Hand-written GLB loader so pixi3d can render the Kenney 3D kit</li>
+          <li>One data file drives both the PixiJS and Babylon.js builds</li>
+        </ul>
+        <div class="spot-actions">
+          <a href="https://voidrushpixi.netlify.app/" target="_blank" rel="noopener noreferrer" class="btn btn-grad magnetic"><span>Play now</span><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17 17 7M8 7h9v9"/></svg></a>
+          <button class="btn btn-glass" data-open="void-rush"><span>Details</span></button>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- LIBRARY -->
-  <section id="library" data-achievement="library">
-    <div class="section-inner">
-      <p class="section-tag reveal-up">// 02 — LEVEL SELECT</p>
-      <div class="section-head">
-        <h2 class="section-title reveal-up">Game Library</h2>
-        <p class="section-desc reveal-up">Pick a cartridge. Playable builds launch straight in your browser; everything else links to the source.</p>
+  <!-- WORK: horizontal gallery -->
+  <section id="work">
+    <div class="work-head wrap">
+      <div>
+        <p class="eyebrow reveal"><span>03</span>Selected games</p>
+        <h2 class="section-title reveal">All games</h2>
       </div>
-      <div class="filter-bar reveal-up" id="filter-bar" role="tablist" aria-label="Filter games"></div>
-      <div class="games-grid" id="games-grid">
+      <p class="work-note reveal">Scroll or swipe through the collection. Playable builds launch in a new tab; everything else opens the source.</p>
+    </div>
+    <div class="work-pin">
+      <div class="work-track" id="work-track">
         <!-- Cards rendered by js/main.js from js/games-data.js -->
       </div>
+      <div class="work-progress" aria-hidden="true"><i id="work-progress"></i></div>
     </div>
   </section>
 
-  <!-- SKILL TREE -->
-  <section id="skills" data-achievement="skills">
-    <div class="section-inner">
-      <p class="section-tag reveal-up">// 03 — SKILL TREE</p>
-      <h2 class="section-title reveal-up">Abilities Unlocked</h2>
-      <p class="section-desc reveal-up">What I actually used to ship the games above. Filled pips show where I'm most comfortable, and a blinking pip is one I'm leveling up right now. I'm still early in my career, so there's plenty left to grind.</p>
-
-      <div class="tree-grid">
-        <div class="tree-branch reveal-up" style="--c:#8b5cf6">
-          <div class="branch-head"><span class="branch-icon">🕹️</span><h3>Engines</h3></div>
-          <ul class="skill-list">
-            <li><span class="sk-name">PixiJS <em>v7 / v8</em></span><span class="pips" data-lv="4"></span></li>
-            <li><span class="sk-name">Phaser 3</span><span class="pips" data-lv="3"></span></li>
-            <li><span class="sk-name">Unity <em>C#</em></span><span class="pips" data-lv="2" data-grow></span></li>
-            <li><span class="sk-name">Babylon.js</span><span class="pips" data-lv="2"></span></li>
-            <li><span class="sk-name">pixi3d</span><span class="pips" data-lv="2"></span></li>
-          </ul>
-        </div>
-        <div class="tree-branch reveal-up" style="--c:#22d3ee">
-          <div class="branch-head"><span class="branch-icon">✨</span><h3>Graphics &amp; Feel</h3></div>
-          <ul class="skill-list">
-            <li><span class="sk-name">Particles &amp; pooling</span><span class="pips" data-lv="3"></span></li>
-            <li><span class="sk-name">Tweens &amp; game juice</span><span class="pips" data-lv="3"></span></li>
-            <li><span class="sk-name">GLSL shaders</span><span class="pips" data-lv="2"></span></li>
-            <li><span class="sk-name">3D models <em>GLB / glTF</em></span><span class="pips" data-lv="2"></span></li>
-            <li><span class="sk-name">Web Audio synthesis</span><span class="pips" data-lv="3"></span></li>
-          </ul>
-        </div>
-        <div class="tree-branch reveal-up" style="--c:#ec4899">
-          <div class="branch-head"><span class="branch-icon">⚙️</span><h3>Game Systems</h3></div>
-          <ul class="skill-list">
-            <li><span class="sk-name">Gameplay programming</span><span class="pips" data-lv="3"></span></li>
-            <li><span class="sk-name">Scene &amp; state machines</span><span class="pips" data-lv="2" data-grow></span></li>
-            <li><span class="sk-name">AI opponents &amp; waves</span><span class="pips" data-lv="2" data-grow></span></li>
-            <li><span class="sk-name">Hand tracking <em>MediaPipe</em></span><span class="pips" data-lv="2" data-grow></span></li>
-            <li><span class="sk-name">Game UI / HUD</span><span class="pips" data-lv="3"></span></li>
-          </ul>
-        </div>
-        <div class="tree-branch reveal-up" style="--c:#facc15">
-          <div class="branch-head"><span class="branch-icon">🧰</span><h3>Support Class</h3></div>
-          <ul class="skill-list">
-            <li><span class="sk-name">JavaScript / C# / C++</span><span class="pips" data-lv="3"></span></li>
-            <li><span class="sk-name">React · Node · Express</span><span class="pips" data-lv="3"></span></li>
-            <li><span class="sk-name">PHP · Laravel · REST</span><span class="pips" data-lv="3"></span></li>
-            <li><span class="sk-name">WebSockets <em>real-time</em></span><span class="pips" data-lv="3"></span></li>
-            <li><span class="sk-name">Python · TensorFlow</span><span class="pips" data-lv="2"></span></li>
-          </ul>
+  <!-- SKILLS -->
+  <section id="skills">
+    <div class="wrap">
+      <p class="eyebrow reveal"><span>04</span>Toolkit</p>
+      <div class="skills-head">
+        <h2 class="section-title reveal">What I build with</h2>
+        <div class="legend reveal">
+          <span><i class="lg-on"></i>Comfortable</span>
+          <span><i class="lg-grow"></i>Leveling up</span>
         </div>
       </div>
 
-      <div class="inventory reveal-up">
-        <span class="inv-label">INVENTORY</span>
-        <div class="inv-items">
-          <span>Vite</span><span>Git</span><span>VS Code</span><span>Unity Editor</span><span>OpenXR</span><span>Netlify</span><span>PostgreSQL</span><span>MongoDB</span><span>Postman</span><span>Kenney Assets</span>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- QUEST LOG -->
-  <section id="quests" data-achievement="quests">
-    <div class="section-inner">
-      <p class="section-tag reveal-up">// 04 — QUEST LOG</p>
-      <h2 class="section-title reveal-up">Player Backstory</h2>
-
-      <div class="quest-grid">
-        <div class="quest-story reveal-up">
-          <p>I'm Shifa, and I make games under the name <strong>FluffyCrunch</strong>. I started with a Phaser game about catching apples and kept going: a match-3 puzzler, a particle toy with its own GLSL shader, Pong you play with your bare hand, and a 3D tower defense game I liked enough to build in two engines.</p>
-          <p>What I care about most is <strong>game feel</strong>: the tween on a gem swap, screen shake that grows with a rally, a CPU opponent that's good but not perfect. I like the systems underneath too, like object pools, scene managers and wave data that two renderers can share.</p>
-          <p>Right now I'm leveling up in <strong>Unity and C#</strong>, with Flappy Bird as the first build and bigger Unity projects on the way. I also work full-stack (React, Node, Laravel, WebSockets), so the backend half of a game doesn't scare me.</p>
-
-          <div class="edu-card">
-            <div class="edu-icon">🎓</div>
-            <div>
-              <div class="edu-head">
-                <h3>AISSMS College of Engineering</h3>
-                <span class="edu-years">2021 — 2025</span>
-              </div>
-              <p class="edu-degree">B.E. Computer Engineering</p>
-            </div>
-          </div>
-        </div>
-
-        <div class="achievements reveal-up">
-          <h3 class="ach-title">Achievements</h3>
-          <ul class="ach-list">
-            <li class="ach"><span class="ach-ico">🍎</span><div><b>First Build</b><p>Shipped Apple Catcher in Phaser 3</p></div></li>
-            <li class="ach"><span class="ach-ico">🔁</span><div><b>Built It Twice</b><p>Void Rush in PixiJS + pixi3d and Babylon.js</p></div></li>
-            <li class="ach"><span class="ach-ico">🌌</span><div><b>First Shader</b><p>Custom GLSL filter for Nebula</p></div></li>
-            <li class="ach"><span class="ach-ico">🖐️</span><div><b>No Controller Needed</b><p>Two hand-tracked games with MediaPipe</p></div></li>
-            <li class="ach"><span class="ach-ico">🐦</span><div><b>Engine Hopper</b><p>Games in Unity, Phaser, PixiJS and Babylon.js</p></div></li>
-            <li class="ach"><span class="ach-ico">⚡</span><div><b>Hackathon Run</b><p>Smart India Hackathon 2024 participant</p></div></li>
-            <li class="ach"><span class="ach-ico">🏅</span><div><b>Team Captain</b><p>Led documentation &amp; audit for a state-level sports event</p></div></li>
-            <li class="ach locked"><span class="ach-ico">🔒</span><div><b>???</b><p>Ship a full Unity title · in progress</p></div></li>
+      <div class="bento" id="bento">
+        <article class="bento-card reveal" style="--c1:#a78bfa;--c2:#6366f1">
+          <div class="bc-head"><span class="bc-ico"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="6" width="20" height="12" rx="6"/><path d="M6 12h4M8 10v4M15 11h.01M18 13h.01"/></svg></span><h3>Engines</h3></div>
+          <ul class="meters">
+            <li><span class="m-name">PixiJS <em>v7 / v8</em></span><span class="pips" data-lv="4"></span></li>
+            <li><span class="m-name">Phaser 3</span><span class="pips" data-lv="3"></span></li>
+            <li><span class="m-name">Unity <em>C#</em></span><span class="pips" data-lv="2" data-grow></span></li>
+            <li><span class="m-name">Babylon.js</span><span class="pips" data-lv="2"></span></li>
+            <li><span class="m-name">pixi3d</span><span class="pips" data-lv="2"></span></li>
           </ul>
-        </div>
+        </article>
+        <article class="bento-card reveal" style="--c1:#22d3ee;--c2:#3b82f6">
+          <div class="bc-head"><span class="bc-ico"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/><path d="M19 17l.7 1.8 1.8.7-1.8.7L19 22l-.7-1.8-1.8-.7 1.8-.7z"/></svg></span><h3>Graphics &amp; Feel</h3></div>
+          <ul class="meters">
+            <li><span class="m-name">Particles &amp; pooling</span><span class="pips" data-lv="3"></span></li>
+            <li><span class="m-name">Tweens &amp; game juice</span><span class="pips" data-lv="3"></span></li>
+            <li><span class="m-name">GLSL shaders</span><span class="pips" data-lv="2"></span></li>
+            <li><span class="m-name">3D models <em>GLB / glTF</em></span><span class="pips" data-lv="2"></span></li>
+            <li><span class="m-name">Web Audio synthesis</span><span class="pips" data-lv="3"></span></li>
+          </ul>
+        </article>
+        <article class="bento-card reveal" style="--c1:#f472b6;--c2:#a78bfa">
+          <div class="bc-head"><span class="bc-ico"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1 7 17M17 7l2.1-2.1"/></svg></span><h3>Game Systems</h3></div>
+          <ul class="meters">
+            <li><span class="m-name">Gameplay programming</span><span class="pips" data-lv="3"></span></li>
+            <li><span class="m-name">Scene &amp; state machines</span><span class="pips" data-lv="2" data-grow></span></li>
+            <li><span class="m-name">AI opponents &amp; waves</span><span class="pips" data-lv="2" data-grow></span></li>
+            <li><span class="m-name">Hand tracking <em>MediaPipe</em></span><span class="pips" data-lv="2" data-grow></span></li>
+            <li><span class="m-name">Game UI / HUD</span><span class="pips" data-lv="3"></span></li>
+          </ul>
+        </article>
+        <article class="bento-card reveal" style="--c1:#facc15;--c2:#fb923c">
+          <div class="bc-head"><span class="bc-ico"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m8 9-4 3 4 3M16 9l4 3-4 3M14 5l-4 14"/></svg></span><h3>Beyond Games</h3></div>
+          <ul class="meters">
+            <li><span class="m-name">JavaScript / C# / C++</span><span class="pips" data-lv="3"></span></li>
+            <li><span class="m-name">React · Node · Express</span><span class="pips" data-lv="3"></span></li>
+            <li><span class="m-name">PHP · Laravel · REST</span><span class="pips" data-lv="3"></span></li>
+            <li><span class="m-name">WebSockets <em>real-time</em></span><span class="pips" data-lv="3"></span></li>
+            <li><span class="m-name">Python · TensorFlow</span><span class="pips" data-lv="2"></span></li>
+          </ul>
+        </article>
+      </div>
+
+      <div class="tools reveal">
+        <span class="mono">Also in the bag</span>
+        <div class="tool-list"><span>Vite</span><span>Git</span><span>VS Code</span><span>Unity Editor</span><span>OpenXR</span><span>Netlify</span><span>PostgreSQL</span><span>MongoDB</span><span>Postman</span><span>Kenney Assets</span></div>
       </div>
     </div>
   </section>
 
-  <!-- SIDE QUESTS -->
-  <section id="side-quests">
-    <div class="section-inner">
-      <p class="section-tag reveal-up">// 05 — SIDE QUESTS</p>
-      <h2 class="section-title reveal-up">Off the Main Path</h2>
-      <p class="section-desc reveal-up">Things I built outside of games. They're the reason I'm comfortable with servers, data and security.</p>
-      <div class="side-grid">
-        <a class="side-card reveal-up" href="https://iitiancraft.com/" target="_blank" rel="noopener noreferrer">
-          <span class="side-kind">Full-stack web</span>
-          <h3>IITIAN CRAFT</h3>
-          <p>Live digital-services website with auth, admin panel and a full backend.</p>
-          <span class="side-link">Visit ↗</span>
+  <!-- ABOUT -->
+  <section id="about">
+    <div class="wrap about-grid">
+      <div class="about-side">
+        <p class="eyebrow reveal"><span>05</span>About</p>
+        <h2 class="section-title reveal">Hi, I'm Shifa.<br><span class="muted">I make games as FluffyCrunch.</span></h2>
+        <div class="edu glass reveal">
+          <span class="mono">Education · 2021 — 2025</span>
+          <h3>AISSMS College of Engineering</h3>
+          <p>B.E. Computer Engineering</p>
+        </div>
+      </div>
+      <div class="about-main">
+        <div class="about-text">
+          <p class="reveal">I started with a Phaser game about catching apples and kept going: a match-3 puzzler, a particle toy with its own GLSL shader, Pong you play with your bare hand, and a 3D tower defense game I liked enough to build in two engines.</p>
+          <p class="reveal">I like the systems underneath too, like object pools, scene managers and wave data that two renderers can share. Right now I'm leveling up in <strong>Unity and C#</strong>, with Flappy Bird as the first build and bigger Unity projects on the way.</p>
+          <p class="reveal">I also work full-stack (React, Node, Laravel, WebSockets), so the backend half of a game doesn't scare me.</p>
+        </div>
+        <h3 class="sub-title reveal">Milestones</h3>
+        <ul class="milestones">
+          <li class="reveal"><span class="ms-ico">🍎</span><div><b>First build</b><p>Shipped Apple Catcher in Phaser 3</p></div></li>
+          <li class="reveal"><span class="ms-ico">🔁</span><div><b>Built it twice</b><p>Void Rush in PixiJS + pixi3d and Babylon.js</p></div></li>
+          <li class="reveal"><span class="ms-ico">🌌</span><div><b>First shader</b><p>Custom GLSL filter for Nebula</p></div></li>
+          <li class="reveal"><span class="ms-ico">🖐️</span><div><b>No controller needed</b><p>Two hand-tracked games with MediaPipe</p></div></li>
+          <li class="reveal"><span class="ms-ico">⚡</span><div><b>Hackathon</b><p>Smart India Hackathon 2024 participant</p></div></li>
+          <li class="reveal"><span class="ms-ico">🏅</span><div><b>Team lead</b><p>Led documentation &amp; audit for a state-level sports event</p></div></li>
+          <li class="reveal ms-next"><span class="ms-ico">🎯</span><div><b>Next up</b><p>Ship a full Unity title</p></div></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- BEYOND GAMES -->
+  <section id="beyond">
+    <div class="wrap">
+      <p class="eyebrow reveal"><span>06</span>Side projects</p>
+      <h2 class="section-title reveal">Off the main path</h2>
+      <div class="rows">
+        <a class="row reveal" href="https://iitiancraft.com/" target="_blank" rel="noopener noreferrer">
+          <span class="row-kind mono">Full-stack</span><span class="row-title">IITIAN CRAFT</span><span class="row-desc">Live digital-services site with auth, admin panel and backend</span><span class="row-arrow">↗</span>
         </a>
-        <a class="side-card reveal-up" href="https://github.com/FluffyCrunch/Web-Application-Vulnerability-Scanner" target="_blank" rel="noopener noreferrer">
-          <span class="side-kind">Security</span>
-          <h3>Vulnerability Scanner</h3>
-          <p>Detects XSS, SQL injection, SSL/TLS issues and missing security headers.</p>
-          <span class="side-link">Source ↗</span>
+        <a class="row reveal" href="https://github.com/FluffyCrunch/Web-Application-Vulnerability-Scanner" target="_blank" rel="noopener noreferrer">
+          <span class="row-kind mono">Security</span><span class="row-title">Vulnerability Scanner</span><span class="row-desc">Detects XSS, SQL injection, SSL/TLS issues and missing headers</span><span class="row-arrow">↗</span>
         </a>
-        <a class="side-card reveal-up" href="https://github.com/FluffyCrunch/Mini-Projects/tree/main/HPC" target="_blank" rel="noopener noreferrer">
-          <span class="side-kind">GPU</span>
-          <h3>Huffman on GPU</h3>
-          <p>Huffman compression accelerated with Python and CuPy.</p>
-          <span class="side-link">Source ↗</span>
+        <a class="row reveal" href="https://github.com/FluffyCrunch/Mini-Projects/tree/main/HPC" target="_blank" rel="noopener noreferrer">
+          <span class="row-kind mono">GPU</span><span class="row-title">Huffman on GPU</span><span class="row-desc">Huffman compression accelerated with Python and CuPy</span><span class="row-arrow">↗</span>
         </a>
-        <a class="side-card reveal-up" href="https://github.com/FluffyCrunch/Mini-Projects/tree/main/DL" target="_blank" rel="noopener noreferrer">
-          <span class="side-kind">Deep learning</span>
-          <h3>B&amp;W Colorizer</h3>
-          <p>A CNN that colourises grayscale photos, built with TensorFlow and Keras.</p>
-          <span class="side-link">Source ↗</span>
+        <a class="row reveal" href="https://github.com/FluffyCrunch/Mini-Projects/tree/main/DL" target="_blank" rel="noopener noreferrer">
+          <span class="row-kind mono">Deep learning</span><span class="row-title">B&amp;W Colorizer</span><span class="row-desc">A CNN that colourises grayscale photos</span><span class="row-arrow">↗</span>
         </a>
       </div>
     </div>
   </section>
 
   <!-- CONTACT -->
-  <section id="contact" data-achievement="contact">
-    <div class="section-inner contact-inner">
-      <p class="section-tag reveal-up">// 06 — MULTIPLAYER</p>
-      <p class="insert-coin reveal-up">INSERT COIN</p>
-      <h2 class="section-title reveal-up">Player 2, <span class="grad">Join?</span></h2>
-      <p class="section-desc reveal-up center">Hiring for a game team, want a playtester's opinion, or have an idea that won't leave your head? Send it over.</p>
-      <div class="contact-cta reveal-up">
-        <a class="btn btn-primary btn-lg" href="mailto:shifaskhatri10@gmail.com" data-sfx="coin"><span>✉ shifaskhatri10@gmail.com</span></a>
-      </div>
-      <div class="contact-links reveal-up">
-        <a class="contact-link" href="https://github.com/FluffyCrunch" target="_blank" rel="noopener noreferrer">
-          <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M12 .5C5.65.5.5 5.65.5 12c0 5.08 3.29 9.39 7.86 10.91.58.11.79-.25.79-.56 0-.28-.01-1.02-.02-2-3.2.7-3.88-1.54-3.88-1.54-.52-1.33-1.28-1.69-1.28-1.69-1.04-.71.08-.7.08-.7 1.15.08 1.76 1.18 1.76 1.18 1.02 1.75 2.68 1.25 3.34.95.1-.74.4-1.25.72-1.54-2.56-.29-5.25-1.28-5.25-5.7 0-1.26.45-2.29 1.18-3.09-.12-.29-.51-1.46.11-3.04 0 0 .96-.31 3.15 1.18a10.9 10.9 0 0 1 5.74 0c2.19-1.49 3.15-1.18 3.15-1.18.62 1.58.23 2.75.11 3.04.73.8 1.18 1.83 1.18 3.09 0 4.43-2.69 5.41-5.26 5.69.41.36.78 1.07.78 2.17 0 1.57-.01 2.83-.01 3.22 0 .31.21.68.8.56A10.51 10.51 0 0 0 23.5 12C23.5 5.65 18.35.5 12 .5Z"/></svg>
-          <span>GitHub</span>
-        </a>
-        <a class="contact-link" href="https://www.linkedin.com/in/shifa-khatri-877a002b2" target="_blank" rel="noopener noreferrer">
-          <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M20.45 20.45h-3.55v-5.57c0-1.33-.02-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.36V9h3.41v1.56h.05c.47-.9 1.63-1.85 3.36-1.85 3.6 0 4.27 2.37 4.27 5.45v6.29ZM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12ZM7.12 20.45H3.56V9h3.56v11.45ZM22.22 0H1.77C.8 0 0 .78 0 1.75v20.5C0 23.22.8 24 1.77 24h20.45c.98 0 1.78-.78 1.78-1.75V1.75C24 .78 23.2 0 22.22 0Z"/></svg>
-          <span>LinkedIn</span>
-        </a>
-        <a class="contact-link" href="https://github.com/FluffyCrunch/Random-ideas" target="_blank" rel="noopener noreferrer">
-          <span aria-hidden="true">🧪</span>
-          <span>Random Ideas</span>
-        </a>
+  <section id="contact">
+    <div class="contact-glow" aria-hidden="true"></div>
+    <div class="wrap contact-inner">
+      <p class="eyebrow reveal"><span>07</span>Contact</p>
+      <h2 class="contact-title"><span class="ct-line"><span class="split">Let's build</span></span><span class="ct-line"><span class="ct-grad grad-text">something playable.</span></span></h2>
+      <p class="contact-lead reveal">Hiring for a game team, want a playtester's opinion, or have an idea that won't leave your head? My inbox is open.</p>
+      <a class="mail-btn magnetic reveal" href="mailto:shifaskhatri10@gmail.com">
+        <span class="mail-inner">shifaskhatri10@gmail.com</span>
+      </a>
+      <div class="socials reveal">
+        <a href="https://github.com/FluffyCrunch" target="_blank" rel="noopener noreferrer">GitHub<span>↗</span></a>
+        <a href="https://www.linkedin.com/in/shifa-khatri-877a002b2" target="_blank" rel="noopener noreferrer">LinkedIn<span>↗</span></a>
+        <a href="https://github.com/FluffyCrunch/Random-ideas" target="_blank" rel="noopener noreferrer">Random Ideas<span>↗</span></a>
       </div>
     </div>
   </section>
 </main>
 
-<footer>
-  <div class="footer-inner">
-    <p class="pixel-label small">THANKS FOR PLAYING</p>
-    <p>&copy; <span id="year"></span> Shifa Khatri · FluffyCrunch</p>
-    <p class="footer-hint">psst… ↑ ↑ ↓ ↓ ← → ← → B A</p>
-  </div>
+<footer class="footer">
+  <span>© <span id="year"></span> Shifa Khatri · FluffyCrunch</span>
+  <span class="footer-hint mono" title="Try it">↑ ↑ ↓ ↓ ← → ← → B A</span>
+  <a href="#hero" class="to-top">Back to top ↑</a>
 </footer>
 
-<!-- Game detail modal -->
-<div class="modal" id="game-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title" hidden>
-  <div class="modal-backdrop" data-close></div>
-  <div class="modal-panel">
-    <button class="modal-close" data-close aria-label="Close">✕</button>
-    <div class="modal-media">
-      <img id="modal-img" src="" alt="">
-      <div class="modal-thumbs" id="modal-thumbs"></div>
+<!-- Game detail panel -->
+<div class="panel" id="panel" role="dialog" aria-modal="true" aria-labelledby="panel-title" hidden>
+  <div class="panel-backdrop" data-close></div>
+  <div class="panel-sheet">
+    <button class="panel-close" data-close aria-label="Close"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+    <div class="panel-media">
+      <img id="panel-img" src="" alt="">
+      <div class="panel-thumbs" id="panel-thumbs"></div>
     </div>
-    <div class="modal-body">
-      <p class="pixel-label small" id="modal-genre"></p>
-      <h3 id="modal-title"></h3>
-      <p class="modal-tagline" id="modal-tagline"></p>
-      <div class="modal-meta">
-        <div><span>ENGINE</span><b id="modal-engine"></b></div>
-        <div><span>PLATFORM</span><b id="modal-platform"></b></div>
+    <div class="panel-body">
+      <p class="mono" id="panel-genre"></p>
+      <h3 id="panel-title"></h3>
+      <p class="panel-tagline" id="panel-tagline"></p>
+      <div class="panel-meta">
+        <div><span class="mono">Engine</span><b id="panel-engine"></b></div>
+        <div><span class="mono">Platform</span><b id="panel-platform"></b></div>
       </div>
-      <p id="modal-desc"></p>
-      <h4>Features</h4>
-      <ul class="feat-list" id="modal-features"></ul>
-      <div id="modal-controls-wrap">
-        <h4>Controls</h4>
-        <div class="controls" id="modal-controls"></div>
+      <p class="panel-desc" id="panel-desc"></p>
+      <h4 class="mono">Features</h4>
+      <ul class="ticks" id="panel-features"></ul>
+      <div id="panel-controls-wrap">
+        <h4 class="mono">Controls</h4>
+        <div class="controls" id="panel-controls"></div>
       </div>
-      <div class="tags" id="modal-tags"></div>
-      <div class="modal-cta" id="modal-cta"></div>
+      <div class="tags" id="panel-tags"></div>
+      <div class="panel-actions" id="panel-actions"></div>
     </div>
   </div>
 </div>
 
-<script src="js/games-data.js"></script>
-<script src="js/main.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" defer></script>
+<script src="https://unpkg.com/lenis@1.1.13/dist/lenis.min.js" defer></script>
+<script src="js/games-data.js?v=6" defer></script>
+<script src="js/main.js?v=6" defer></script>
 </body>
 </html>
