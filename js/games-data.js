@@ -44,6 +44,29 @@ const GAMES = [
     featured: true
   },
   {
+    id: "immortal",
+    title: "IMmortal",
+    tagline: "A noir fighter where every death makes you weaker",
+    genre: "Action",
+    filters: ["arcade", "story"],
+    engine: "Canvas 2D (no engine)",
+    platform: "Browser · Desktop + Touch",
+    description: "Orans cannot die, but every time he rises, a little less of him comes back. Fight through four areas and a boss to save Mantis in a black-and-white noir brawler with manga-style cutscenes and a soundtrack generated live in the browser.",
+    features: [
+      "Death is a mechanic: you rise where you fell, enemies stay hurt, but max HP and damage shrink each time",
+      "Enemies surround you, fill a poise meter and counter if you spam; perfect-dodge to slow time",
+      "Four areas and a boss fight with a mid-fight transformation",
+      "Manga-style cutscenes with screentone, eye close-ups and impact frames, all drawn in code",
+      "One HTML file with no image or audio files: a step-sequencer soundtrack with fight and boss variants"
+    ],
+    controls: [["A D / ← →", "Move"], ["Space", "Jump"], ["Click", "Attack combo"], ["Right-click", "Heavy attack"], ["Ctrl", "Dodge roll"], ["E", "Talk"]],
+    tags: ["Canvas 2D", "Web Audio API", "JavaScript", "Procedural animation"],
+    shots: ["assets/games/immortal-1.webp", "assets/games/immortal-2.webp", "assets/games/immortal-3.webp"],
+    accent: "#d4d4d8",
+    playUrl: "https://immortal-fluffycrunch.netlify.app",
+    sourceUrl: "https://github.com/FluffyCrunch/Random-ideas/tree/main/immortal"
+  },
+  {
     id: "crystalux",
     title: "Crystalux",
     tagline: "60-second match-3 with combos and bombs",
